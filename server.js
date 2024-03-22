@@ -29,7 +29,7 @@ const app = express();
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
-    "https://bpikd-backend.vercel.app"
+    "https://bpikd-backend.onrender.com"
   );
   res.header(
     "Access-Control-Allow-Headers",
