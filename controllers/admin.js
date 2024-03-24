@@ -10,6 +10,7 @@ import {
   create,
   findOneAndUpdate,
   findOneAndDelete,
+  deleteMany,
 } from '../dal/dal.js';
 import bcrypt from 'bcryptjs';
 

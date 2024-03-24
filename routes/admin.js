@@ -16,27 +16,21 @@ const router = express.Router();
 
 // Setup routes
 router
-  .route('/')
+  .route('/user')
   .post(verifyToken, authorizeAdmin, register) // Register a new user
   .get(verifyToken, getUser)
   .put(verifyToken, updateUser);
 
-router.route('/login').post(login); // User login
-router.get('/list', verifyToken, authorizeAdmin, getAllUsers);
+router.route('/user/login').post(login); // User login
+router.get('/user/list', verifyToken, authorizeAdmin, getAllUsers);
 
-// First, define specific routes:
-router.get('/list', verifyToken, authorizeAdmin, getAllUsers);
-
-router.delete(
-  '/delete-multiply',
-  verifyToken,
-  authorizeAdmin,
-  deleteMultipleUsers
-);
+router
+  .route('/delete-multiply')
+  .delete(verifyToken, authorizeAdmin, deleteMultipleUsers); // User login
 
 // Parameterized routes for user operations
-router.get('/:userId', verifyToken, getUserById);
-router.put('/:userId', verifyToken, updateUser);
-router.delete('/:userId', verifyToken, authorizeAdmin, deleteUser);
+router.get('/user/:userId', verifyToken, getUserById);
+router.put('/user/:userId', verifyToken, updateUser);
+router.delete('/user/:userId', verifyToken, authorizeAdmin, deleteUser);
 // Export the router using ES6 default export
 export default router;
