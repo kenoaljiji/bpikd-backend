@@ -14,38 +14,6 @@ import {
 } from '../dal/dal.js';
 import bcrypt from 'bcryptjs';
 
-/* export async function register(req, res) {
-  console.log(req, res);
-  try {
-    const { error, value } = validator.signUpSchema.validate(
-      req.body,
-      validator.defaults
-    );
-    if (error) {
-      return errorHandler(403, res, error.message);
-    }
-
-    const passwordHash = await bcrypt.hash(value.password, 10);
-
-    const body = {
-      ...value,
-      password: passwordHash,
-    };
-
-    const user = await create(model, body);
-    const accessToken = await generateToken(user);
-    const data = {
-      user: user,
-      token: accessToken,
-    };
-
-    responseHandler(data, res, 'Admin Registered Successfully!', 201);
-  } catch (err) {
-    console.log(err);
-    errorHandler(500, res, err.message);
-  }
-} */
-
 export async function register(req, res) {
   try {
     const { error, value } = validator.signUpSchema.validate(
@@ -131,29 +99,6 @@ export async function login(req, res) {
   }
 }
 
-/* export async function login(req, res) {
-  try {
-    const { email, password } = req.body;
-    const user = await model.findOne({ email });
-
-    if (user && bcrypt.compareSync(password, user.password)) {
-      // Here, ensure that 'user' includes the 'role' property
-      const token = generateToken(user);
-      res.json({
-        _id: user._id,
-        email: user.email,
-        role: user.role,
-        token: token, // Send the token back to the client
-      });
-    } else {
-      res.status(401).send({ message: 'Invalid email or password' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Error logging in user' });
-  }
-} */
-
 export async function getUser(req, res) {
   try {
     const user = await findOne(model, { _id: req.user._id });
@@ -234,30 +179,6 @@ export async function updateUser(req, res) {
     errorHandler(500, res, err.message);
   }
 }
-
-// Assuming you have a function in your DAL or you can directly use the model
-// For example, let's say you have this in your dal.js
-// export async function findAll(model) {
-//   return await model.find({});
-// }
-
-// Import findAll if you're using a separate DAL function
-// If not, you'll use the model directly
-
-/* export async function getAllUsers(req, res) {
-  try {
-    // Directly using model.find() if not using a separate DAL function
-    const users = await model.find({}).select("-password"); // Exclude passwords from the response
-    if (users) {
-      responseHandler(users, res, "Users fetched successfully", 200);
-    } else {
-      errorHandler(404, res, "No users found");
-    }
-  } catch (err) {
-    console.log(err);
-    errorHandler(500, res, "An error occurred while fetching users");
-  }
-} */
 
 export async function getAllUsers(req, res) {
   try {
