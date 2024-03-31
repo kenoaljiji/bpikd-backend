@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
-import Person from '../models/personPost.js'; // Adjust the path as necessary
+import Person from '../models/personPost.js';
+import { agenda } from '../utils/agenda.js'; // Ensure this path is correct
+
+import moment from 'moment-timezone';
+
+// Assuming 'scheduledPublishTime' is in local time and you want to convert it to UTC
 
 export const addOrUpdatePersonAndWork = async (req, res) => {
   const {
@@ -12,6 +17,7 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
     scheduledPublishTime,
     externalSource,
     visibility,
+    isPublished,
   } = req.body;
 
   try {
@@ -29,26 +35,48 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
       scheduledPublishTime,
       externalSource,
       visibility,
+      isPublished,
     };
 
-    // If person does not exist, create a new one
+    let workId;
+
+    let workAction; // To track the action taken (created or updated)
+    let publicationStatus; // To track publication status (immediately or scheduled)
+
+    // Now convert the ISO format date to UTC with moment-timezone
+    const scheduledTimeUTC = moment
+      .tz(scheduledPublishTime, 'Europe/Berlin')
+      .utc()
+      .toISOString();
+
     if (!existingPerson) {
       const newPerson = new Person({
         person: personData,
-        works: [newWork], // Initialize the works array with the new work
+        works: [newWork],
         category,
         visibility,
       });
 
-      await newPerson.save();
-      return res.status(201).json(newPerson);
+      const savedPerson = await newPerson.save();
+      workId = savedPerson.works[savedPerson.works.length - 1]._id; // Assuming `newWork` is the last item in the `works` array
+      workAction = 'created';
     } else {
-      // If the person exists, add the new work to their list of works
       existingPerson.works.push(newWork);
-
-      await existingPerson.save();
-      return res.status(200).json(existingPerson);
+      const updatedPerson = await existingPerson.save();
+      workId = updatedPerson.works[updatedPerson.works.length - 1]._id; // Get the ID of the new work
+      workAction = 'added to existing person';
     }
+
+    // Schedule publication if required
+    if (publishTime === 'Schedule' && scheduledPublishTime) {
+      await agenda.schedule(scheduledTimeUTC, 'publish work', { workId });
+      publicationStatus = `scheduled for ${scheduledPublishTime}`;
+    } else publicationStatus = 'published immediately';
+
+    const message = `Work ${workAction} and ${publicationStatus}.`;
+
+    /*  return res.status(200).json({ message: 'Success', workId });*/
+    return res.status(200).json({ message, workId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
