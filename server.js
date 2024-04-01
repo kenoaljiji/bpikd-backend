@@ -30,7 +30,7 @@ app.use((req, res, next) => {
   res.setHeader(
     'Access-Control-Allow-Origin',
     /* "https://bpikd-backend.onrender.com" */
-    'http://localhost:8000'
+    'https://bpikd-backend-production.up.railway.app'
   );
   res.header(
     'Access-Control-Allow-Headers',
