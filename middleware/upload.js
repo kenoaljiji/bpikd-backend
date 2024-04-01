@@ -15,15 +15,16 @@ const storage = multer.diskStorage({
 // Initialize upload
 export const upload = multer({
   storage: storage,
-  limits: { fileSize: 1000000 }, // 1MB for example
+  limits: { fileSize: 1000000000000000000 }, // 1MB for example
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
 }).fields([
-  { name: 'images', maxCount: 10 },
-  { name: 'videos', maxCount: 5 },
-  { name: 'audios', maxCount: 5 },
-  { name: 'documents', maxCount: 5 },
+  { name: 'images' },
+  { name: 'videos' },
+  { name: 'audios' },
+  { name: 'documents' },
+  { name: 'featuredImage' },
 ]); // Adjust 'maxCount' as needed
 
 // Check file type

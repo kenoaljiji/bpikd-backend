@@ -8,6 +8,8 @@ const app = express();
 
 app.use('/', userRoutes);
 app.use('/post', postRoutes);
+// Serve static files from the public/uploads directory
+app.use('/uploads', express.static('public/uploads'));
 /* app.use("/words", wordsRoutes); */
 
 export default app;
