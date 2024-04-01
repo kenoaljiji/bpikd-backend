@@ -8,8 +8,6 @@ import moment from 'moment-timezone';
 export const addOrUpdatePersonAndWork = async (req, res) => {
   const data = JSON.parse(req.body.data);
 
-  console.log(req.files);
-
   const {
     person: personData,
     category,
@@ -33,6 +31,7 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
     });
 
     let featuredImage;
+
     if (
       req.files &&
       req.files.featuredImage &&
@@ -118,12 +117,12 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
       });
 
       const savedPerson = await newPerson.save();
-      workId = savedPerson.works[savedPerson.works.length - 1]._id; // Assuming `newWork` is the last item in the `works` array
+      workId = savedPerson.works[savedPerson.works.length - 1]._id;
       workAction = 'created';
     } else {
       existingPerson.works.push(newWork);
       const updatedPerson = await existingPerson.save();
-      workId = updatedPerson.works[updatedPerson.works.length - 1]._id; // Get the ID of the new work
+      workId = updatedPerson.works[updatedPerson.works.length - 1]._id;
       workAction = 'added to existing person';
     }
 
