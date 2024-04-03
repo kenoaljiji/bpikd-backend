@@ -29,8 +29,8 @@ const app = express();
 app.use((req, res, next) => {
   res.setHeader(
     'Access-Control-Allow-Origin',
-    /* "https://bpikd-backend.onrender.com" */
-    'https://bpikd-backend-test.up.railway.app'
+    'https://localhost:8000'
+    /* 'https://bpikd-backend-test.up.railway.app' */
   );
   res.header(
     'Access-Control-Allow-Headers',

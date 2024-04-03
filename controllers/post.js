@@ -1,4 +1,5 @@
 import Person from '../models/personPost.js';
+import News from '../models/news.js';
 import { agenda } from '../utils/agenda.js'; // Ensure this path is correct
 
 import moment from 'moment-timezone';
@@ -38,7 +39,7 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
       req.files.featuredImage.length > 0
     ) {
       const file = req.files.featuredImage[0];
-      featuredImage = `${req.protocol}://${req.get('host')}/uploads/${
+      featuredImage = `${req.protocol}://${req.get('host')}/uploads/persons/${
         file.filename
       }`;
     } else {
@@ -135,6 +136,74 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
     const message = `Work ${workAction} and ${publicationStatus}.`;
 
     return res.status(200).json({ message: message, workId });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const addNews = async (req, res) => {
+  const data = JSON.parse(req.body.data);
+
+  const {
+    category,
+    title,
+    content,
+    publishTime,
+    scheduledPublishTime,
+    externalSource,
+    visibility,
+    isPublished,
+  } = data;
+
+  let featuredImage;
+
+  if (
+    req.files &&
+    req.files.featuredImage &&
+    req.files.featuredImage.length > 0
+  ) {
+    const file = req.files.featuredImage[0];
+    featuredImage = `${req.protocol}://${req.get('host')}/uploads/${
+      file.filename
+    }`;
+  } else {
+    featuredImage = null; // Handle the case where there's no featured image
+  }
+
+  // Construct the news item object
+  const newNewsItem = {
+    category,
+    title,
+    content,
+    publishTime: publishTime !== 'Schedule' ? new Date() : 'Now', // Publish immediately if not scheduled
+    scheduledPublishTime,
+    externalSource,
+    visibility,
+    isPublished: true, // Automatically set isPublished based on publishTime
+    featured: featuredImage,
+  };
+
+  try {
+    // Create and save the new news item
+    const newsItem = new News(newNewsItem); // Assuming NewsModel is your mongoose model for news items
+    const savedNewsItem = await newsItem.save();
+
+    // If the publish time is set to schedule, use Agenda to schedule the news item publishing
+
+    const scheduledTimeUTC = moment
+      .tz(scheduledPublishTime, 'Europe/Berlin')
+      .utc()
+      .toISOString();
+
+    if (publishTime === 'Schedule' && scheduledPublishTime) {
+      await agenda.schedule(scheduledTimeUTC, 'publish news', {
+        newsItemId: savedNewsItem._id,
+      });
+    }
+
+    // Respond with the saved news item
+    return res.status(201).json(savedNewsItem);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });

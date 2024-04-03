@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
 const newsSchema = new Schema({
   title: { type: String, required: true },
@@ -6,9 +7,9 @@ const newsSchema = new Schema({
   publishTime: { type: String, required: true },
   scheduledPublishTime: Date,
   externalSource: String,
-  media: [mediaSchema], // Optional: if you decide to include media in news posts
   visibility: { type: String, required: true },
   category: { type: String, required: true },
+  featured: { type: String },
 });
 
 const News = mongoose.model('News', newsSchema);
