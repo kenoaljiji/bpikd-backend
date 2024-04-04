@@ -9,6 +9,7 @@ import {
   displayPersonData,
   displayPersonDetails,
 } from '../controllers/post.js';
+import { getAllNews, getNewsById, addNews } from '../controllers/news.js';
 
 const router = express.Router();
 
@@ -16,10 +17,13 @@ router
   .route('/')
   .post(verifyToken, authorizeAdmin, upload, addOrUpdatePersonAndWork);
 /*   .put(verifyToken, updateUser); */
+router.post('/news', verifyToken, authorizeAdmin, upload, addNews);
 
-// Route to display details of all persons
+// Route to get all news items
+router.get('/news', getAllNews);
 
 router.get('/persons', getAllPersons);
+router.get('/news/:id', getNewsById);
 // Route to display details of a specific person
 router.get('/persons/details/:id', displayPersonDetails);
 

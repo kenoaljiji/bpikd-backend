@@ -4,7 +4,11 @@ import { agenda } from '../utils/agenda.js'; // Ensure this path is correct
 
 import moment from 'moment-timezone';
 
+import User from '../models/admin.js';
+
 // Assuming 'scheduledPublishTime' is in local time and you want to convert it to UTC
+
+// Controller to get all news items
 
 export const addOrUpdatePersonAndWork = async (req, res) => {
   const data = JSON.parse(req.body.data);
@@ -39,7 +43,7 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
       req.files.featuredImage.length > 0
     ) {
       const file = req.files.featuredImage[0];
-      featuredImage = `${req.protocol}://${req.get('host')}/uploads/persons/${
+      featuredImage = `${req.protocol}://${req.get('host')}/uploads/${
         file.filename
       }`;
     } else {
@@ -143,8 +147,17 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
 };
 
 export const addNews = async (req, res) => {
-  const data = JSON.parse(req.body.data);
+  let data;
 
+  try {
+    if (typeof req.body.data === 'string') {
+      data = JSON.parse(req.body.data);
+    } else {
+      data = req.body;
+    }
+  } catch (error) {
+    return res.status(400).json({ error: 'Invalid JSON data provided.' });
+  }
   const {
     category,
     title,
@@ -157,12 +170,7 @@ export const addNews = async (req, res) => {
   } = data;
 
   let featuredImage;
-
-  if (
-    req.files &&
-    req.files.featuredImage &&
-    req.files.featuredImage.length > 0
-  ) {
+  if (req.files?.featuredImage?.[0]) {
     const file = req.files.featuredImage[0];
     featuredImage = `${req.protocol}://${req.get('host')}/uploads/${
       file.filename
@@ -171,38 +179,37 @@ export const addNews = async (req, res) => {
     featuredImage = null; // Handle the case where there's no featured image
   }
 
-  // Construct the news item object
+  // Extracting user from request, assuming middleware already validates and sets user
+  const user = await User.findOne({ _id: req.user._id }); // Assuming your authentication middleware sets `req.user`
+
+  // Construct the news item object, including the user who created it
   const newNewsItem = {
     category,
     title,
     content,
-    publishTime: publishTime !== 'Schedule' ? new Date() : 'Now', // Publish immediately if not scheduled
+    publishTime: publishTime !== 'Schedule' ? new Date() : null,
     scheduledPublishTime,
     externalSource,
     visibility,
-    isPublished: true, // Automatically set isPublished based on publishTime
+    isPublished: isPublished === 'true', // Convert to boolean if necessary
     featured: featuredImage,
+    createdBy: user.username, // or user.username, depending on your schema
   };
 
   try {
-    // Create and save the new news item
-    const newsItem = new News(newNewsItem); // Assuming NewsModel is your mongoose model for news items
+    const newsItem = new News(newNewsItem);
     const savedNewsItem = await newsItem.save();
 
-    // If the publish time is set to schedule, use Agenda to schedule the news item publishing
-
-    const scheduledTimeUTC = moment
-      .tz(scheduledPublishTime, 'Europe/Berlin')
-      .utc()
-      .toISOString();
-
     if (publishTime === 'Schedule' && scheduledPublishTime) {
+      const scheduledTimeUTC = moment
+        .tz(scheduledPublishTime, 'Europe/Berlin')
+        .utc()
+        .toISOString();
       await agenda.schedule(scheduledTimeUTC, 'publish news', {
         newsItemId: savedNewsItem._id,
       });
     }
 
-    // Respond with the saved news item
     return res.status(201).json(savedNewsItem);
   } catch (error) {
     console.error(error);
