@@ -1,5 +1,8 @@
 import express from 'express';
-import { addOrUpdatePersonAndWork } from '../controllers/post.js'; // Adjust the path as necessary
+import {
+  addOrUpdatePersonAndWork,
+  searchUsersByPartialName,
+} from '../controllers/post.js'; // Adjust the path as necessary
 
 import { verifyToken } from '../middleware/auth.js';
 import { authorizeAdmin } from '../middleware/response-handler.js';
@@ -23,6 +26,8 @@ router.post('/news', verifyToken, authorizeAdmin, upload, addNews);
 router.get('/news', getAllNews);
 
 router.get('/persons', getAllPersons);
+router.get('/persons/find', searchUsersByPartialName);
+/* router.get('/persons/find', searchUsersByPartialName); */
 router.get('/news/:id', getNewsById);
 // Route to display details of a specific person
 router.get('/persons/details/:id', displayPersonDetails);

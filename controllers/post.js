@@ -1,6 +1,7 @@
 import Person from '../models/personPost.js';
 import News from '../models/news.js';
 import { agenda } from '../utils/agenda.js'; // Ensure this path is correct
+import { replaceDiacritics } from '../utils/replaceDiacritics.js';
 
 import moment from 'moment-timezone';
 
@@ -260,3 +261,84 @@ export const getAllPersons = async (req, res) => {
     res.status(500).send('Failed to fetch persons');
   }
 };
+
+// Controller to search users by first name and last name
+export const searchUsersByPartialName = async (req, res) => {
+  // Extract query parameter
+  const { searchQuery } = req.query;
+
+  const replaceReg = replaceDiacritics(searchQuery);
+
+  const regex = new RegExp(replaceReg, 'i');
+
+  try {
+    // Use a regular expression for partial, case-insensitive matching
+    // The 'i' flag makes the search case-insensitive
+
+    // Search for users where either first name or last name matches the regex
+    const users = await Person.find(
+      {
+        $or: [{ 'person.firstName': regex }, { 'person.lastName': regex }],
+      },
+      // Project only specific fields and exclude 'person.aboutPerson'
+      {
+        'person.firstName': 1,
+        'person.lastName': 1,
+        'person.featured': 1,
+        // Do not try to exclude 'person.aboutPerson' here; it's implicitly excluded by not being included.
+      }
+    ).lean(); // Add
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found.' });
+    }
+
+    res.json(users);
+  } catch (error) {
+    console.error('Search users by partial name error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export async function deletePost(req, res) {
+  try {
+    // Assuming the post ID to delete is passed as a URL parameter (e.g., /posts/:id)
+    const { postId } = req.params;
+
+    const post = await Person.findByIdAndDelete(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    // Post deleted successfully
+    res.json({ message: 'Post deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while deleting the post.' });
+  }
+}
+
+export async function deleteMultiplePosts(req, res) {
+  try {
+    // The request should contain an array of post IDs to be deleted
+    const { postIds } = req.body;
+
+    // Perform the delete operation
+    const result = await Post.deleteMany({
+      _id: { $in: postIds },
+    });
+
+    // Respond with success message
+    // result.deletedCount tells you how many documents were deleted
+    res.json({
+      message: `${result.deletedCount} posts have been successfully deleted.`,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while deleting posts.' });
+  }
+}

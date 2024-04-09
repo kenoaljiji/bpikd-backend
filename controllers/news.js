@@ -102,3 +102,46 @@ export const getNewsById = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+export async function deletePost(req, res) {
+  try {
+    // Assuming the post ID to delete is passed as a URL parameter (e.g., /posts/:id)
+    const { postId } = req.params;
+
+    const post = await News.findByIdAndDelete(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found.' });
+    }
+
+    // Post deleted successfully
+    res.json({ message: 'Post deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while deleting the post.' });
+  }
+}
+
+export async function deleteMultiplePosts(req, res) {
+  try {
+    // The request should contain an array of post IDs to be deleted
+    const { postIds } = req.body;
+
+    // Perform the delete operation
+    const result = await News.deleteMany({
+      _id: { $in: postIds },
+    });
+
+    // Respond with success message
+    // result.deletedCount tells you how many documents were deleted
+    res.json({
+      message: `${result.deletedCount} posts have been successfully deleted.`,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: 'An error occurred while deleting posts.' });
+  }
+}
