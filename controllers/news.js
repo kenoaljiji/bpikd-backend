@@ -103,45 +103,53 @@ export const getNewsById = async (req, res) => {
   }
 };
 
-export async function deletePost(req, res) {
-  try {
-    // Assuming the post ID to delete is passed as a URL parameter (e.g., /posts/:id)
-    const { postId } = req.params;
+// Function to create a delete controller for a given model
+const createDeleteController = (Model) => {
+  // Return the actual controller function
+  return async (req, res) => {
+    try {
+      const { postId } = req.params; // Renamed `postId` to `id` for generality
+      const document = await Model.findByIdAndDelete(postId);
 
-    const post = await News.findByIdAndDelete(postId);
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found.' });
+      if (!document) {
+        return res.status(404).json({ message: 'Document not found.' });
+      }
+
+      res.json({ message: 'Document deleted successfully.' });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while deleting the document.' });
     }
+  };
+};
 
-    // Post deleted successfully
-    res.json({ message: 'Post deleted successfully.' });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: 'An error occurred while deleting the post.' });
-  }
-}
+// Function to create a delete multiple controller for a given model
+const createDeleteMultipleController = (Model) => {
+  // Return the actual controller function
+  return async (req, res) => {
+    try {
+      const { ids } = req.body; // Assuming an array of ids
+      const result = await Model.deleteMany({
+        _id: { $in: ids },
+      });
 
-export async function deleteMultiplePosts(req, res) {
-  try {
-    // The request should contain an array of post IDs to be deleted
-    const { postIds } = req.body;
+      res.json({
+        message: `${result.deletedCount} documents have been successfully deleted.`,
+      });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ message: 'An error occurred while deleting documents.' });
+    }
+  };
+};
 
-    // Perform the delete operation
-    const result = await News.deleteMany({
-      _id: { $in: postIds },
-    });
+// Creating specific delete controllers for each model
+export const deleteNewsPost = createDeleteController(News);
+export const deleteMultipleNewsPosts = createDeleteMultipleController(News);
 
-    // Respond with success message
-    // result.deletedCount tells you how many documents were deleted
-    res.json({
-      message: `${result.deletedCount} posts have been successfully deleted.`,
-    });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: 'An error occurred while deleting posts.' });
-  }
-}
+export const deletePerson = createDeleteController(Person);
+export const deleteMultiplePersons = createDeleteMultipleController(Person);

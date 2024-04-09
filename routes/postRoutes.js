@@ -12,7 +12,15 @@ import {
   displayPersonData,
   displayPersonDetails,
 } from '../controllers/post.js';
-import { getAllNews, getNewsById, addNews } from '../controllers/news.js';
+import {
+  getAllNews,
+  getNewsById,
+  addNews,
+  deleteNewsPost,
+  deleteMultipleNewsPosts,
+  deletePerson,
+  deleteMultiplePersons,
+} from '../controllers/news.js';
 
 const router = express.Router();
 
@@ -27,7 +35,22 @@ router.get('/news', getAllNews);
 
 router.get('/persons', getAllPersons);
 router.get('/persons/find', searchUsersByPartialName);
+
+// News routes
+
+router.delete('/news', deleteMultipleNewsPosts);
+// Assuming you're using DELETE with a body, which is not standard but works
+
+// Person routes
+
+router.delete('/persons/', deleteMultiplePersons); // Same note as above
+
+router.delete('/news/', deleteMultiplePersons);
+
 /* router.get('/persons/find', searchUsersByPartialName); */
+
+router.delete('/persons/:postId', deletePerson);
+router.delete('/news/:postId', deleteNewsPost);
 router.get('/news/:id', getNewsById);
 // Route to display details of a specific person
 router.get('/persons/details/:id', displayPersonDetails);

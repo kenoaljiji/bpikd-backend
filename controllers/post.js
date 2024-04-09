@@ -92,6 +92,8 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
         : [],
     };
 
+    const user = await User.findOne({ _id: req.user._id }); //
+
     const newWork = {
       title,
       media: mediaFiles,
@@ -101,6 +103,7 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
       externalSource,
       visibility,
       isPublished,
+      createdBy: user.username,
     };
 
     let workId;
@@ -116,7 +119,11 @@ export const addOrUpdatePersonAndWork = async (req, res) => {
 
     if (!existingPerson) {
       const newPerson = new Person({
-        person: { ...personData, featured: featuredImage },
+        person: {
+          ...personData,
+          featured: featuredImage,
+          createdBy: user.username,
+        },
         works: [newWork],
         category,
         visibility,

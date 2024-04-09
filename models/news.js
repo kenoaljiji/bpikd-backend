@@ -16,7 +16,8 @@ const newsSchema = new mongoose.Schema(
     scheduledPublishTime: Date,
     externalSource: String,
     isPublished: Boolean,
-    featured: String, // Assuming this is a URL to an image or similar
+    featured: String,
+    createdBy: String,
     // Add any other fields you need
   },
   { timestamps: true }

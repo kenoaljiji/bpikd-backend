@@ -41,14 +41,19 @@ const workSchema = new Schema({
   scheduledPublishTime: Date,
   externalSource: String,
   media: [mediaSchema],
+  createdBy: String,
 });
 
-const personDetailsSchema = new Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  aboutPerson: { type: String, required: true },
-  featured: String,
-});
+const personDetailsSchema = new Schema(
+  {
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    aboutPerson: { type: String, required: true },
+    featured: String,
+    createdBy: String,
+  },
+  { timestamps: true }
+);
 
 const personSchema = new Schema({
   person: personDetailsSchema,
