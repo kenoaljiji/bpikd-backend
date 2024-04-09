@@ -1,8 +1,5 @@
 import express from 'express';
 
-import { verifyToken } from '../middleware/auth.js';
-import { authorizeAdmin } from '../middleware/response-handler.js';
-
 import {
   getAllSortedItems,
   updateOrCreateSortItems,

@@ -260,6 +260,7 @@ export const getAllPersons = async (req, res) => {
         'person.lastName': 1,
         'person.aboutPerson': 1,
         'person.featured': 1,
+        'person.createdBy': 1,
       }
     );
     res.json(persons); // Send the list of persons as the response
